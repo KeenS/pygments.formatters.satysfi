@@ -1,5 +1,6 @@
 from pygments.formatter import Formatter
 from pygments.token import Token, STANDARD_TYPES
+import re
 
 __all__ = ['SatysfiFormatter']
 
@@ -21,18 +22,9 @@ FULL_DOCUMENT_FOOTER = """
 
 
 def escape_satysfi(text):
-    return text.replace('\\', '\\\\')\
-               .replace('|', '\|')\
-               .replace('{', '\{')\
-               .replace('}', '\}')\
-               .replace('%', '\%')\
-               .replace('*', '\*')\
-               .replace('@', '\@')\
-               .replace('>', '\>')\
-               .replace('<', '\<')\
-               .replace(';', '\;')\
-               .replace('`', '\`')\
-               .replace('$', '\$')
+    nbackquotes = max((len(s) for s in re.findall("`+", text)), default = 0)
+    quote = "`" * (nbackquotes + 1)
+    return (quote + " " + text + " " + quote)
 
 def _get_ttype_name(ttype):
     fname = STANDARD_TYPES.get(ttype)
@@ -69,7 +61,7 @@ class SatysfiFormatter(Formatter):
             color = parse_color(style['color'])
             if color:
                 ctx = "%s |> set-text-color (RGB%s)" % (ctx, color)
-            out.append("let-inline ctx \py-%(name)s inner = read-inline (%(ctx)s) inner" % dict(
+            out.append("let-inline ctx \py-%(name)s inner = read-inline (%(ctx)s) (embed-string inner)" % dict(
                 name = _get_ttype_name(ttype),
                 ctx = ctx
             ))
@@ -81,7 +73,7 @@ class SatysfiFormatter(Formatter):
         outfile.write("+p{\n")
         for ttype, value in tokensource:
             value = escape_satysfi(value)
-            outfile.write("\\py-%s{%s}" % (_get_ttype_name(ttype), value))
+            outfile.write("\\py-%s(%s);" % (_get_ttype_name(ttype), value))
 
         outfile.write("}\n")
         if self.full:
