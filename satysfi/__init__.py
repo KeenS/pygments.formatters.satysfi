@@ -32,7 +32,9 @@ def escape_satysfi(text):
                .replace('<', '\<')\
                .replace(';', '\;')\
                .replace('`', '\`')\
-               .replace('$', '\$')
+               .replace('$', '\$')\
+               .replace(' ', '\py-sp;')\
+               .replace("\n", '\py-lb;')
 
 def _get_ttype_name(ttype):
     fname = STANDARD_TYPES.get(ttype)
@@ -64,6 +66,9 @@ class SatysfiFormatter(Formatter):
 
     def get_style_defs(self, arg=''):
         out= []
+        out.append("let-block ctx +py-code inner = line-break true true ctx (read-inline ctx inner)")
+        out.append("let-inline ctx \py-lb = discretionary 0 (inline-skip (get-text-width ctx *' 2.)) inline-fil inline-nil")
+        out.append("let-inline ctx \py-sp = read-inline ctx (embed-string (string-unexplode [32]))")
         for ttype, style in self.style:
             ctx = "ctx"
             color = parse_color(style['color'])
@@ -78,7 +83,7 @@ class SatysfiFormatter(Formatter):
     def format_unencoded(self, tokensource, outfile):
         if self.full:
             outfile.write(FULL_DOCUMENT_HEADER)
-        outfile.write("+p{\n")
+        outfile.write("+py-code{\n")
         for ttype, value in tokensource:
             value = escape_satysfi(value)
             outfile.write("\\py-%s{%s}" % (_get_ttype_name(ttype), value))

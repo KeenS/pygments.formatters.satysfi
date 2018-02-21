@@ -1,3 +1,6 @@
+let-block ctx +py-code inner = line-break true true ctx (read-inline ctx inner)
+let-inline ctx \py-lb = discretionary 0 (inline-skip (get-text-width ctx *' 2.)) inline-fil inline-nil
+let-inline ctx \py-sp = read-inline ctx (embed-string (string-unexplode [32]))
 let-inline ctx \py- inner = read-inline (ctx) inner
 let-inline ctx \py- inner = read-inline (ctx) inner
 let-inline ctx \py-w inner = read-inline (ctx |> set-text-color (RGB(0.73046875, 0.73046875, 0.73046875))) inner
