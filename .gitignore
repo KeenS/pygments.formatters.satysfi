@@ -1,0 +1,6 @@
+build
+dist
+pygments.formatters.satysfi.egg-info
+*.pyc
+__pycache__
+
